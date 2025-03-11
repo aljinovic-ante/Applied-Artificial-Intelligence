@@ -10,9 +10,9 @@ class Player:
         hand=state["hand"]
         table=state["table"]
         played_cards=state["played_cards"]
-        print("Cards in hand: ", hand)
-        print("Cards on table: ", table)
-        print("Already played cards: ", played_cards)
+        # print("Cards in hand: ", hand)
+        # print("Cards on table: ", table)
+        # print("Already played cards: ", played_cards)
         ###
         # for card in hand:
         #     if card%table[0][0]==0:
