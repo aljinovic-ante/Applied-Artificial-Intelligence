@@ -33,11 +33,3 @@ class Deck:
 
     def remove(self,card):
         self.deck.remove(card)
-
-deck=Deck()
-print(deck.shuffle())
-deck.print()
-a,b=deck.deal()
-
-print(a,b)
-print("hello")

@@ -1,6 +1,5 @@
 from player import Player
 
-class Human:
-    def __init__(self,x):
-        super().__init__(x)
-        self.x=x
+class Human(Player):
+    def __init__(self, name):
+        super().__init__(name)
