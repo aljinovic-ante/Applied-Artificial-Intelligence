@@ -65,5 +65,5 @@ class Game:
         elif result == -1:
             print("Player Two won!")
         else:
-            print("Draw")
+            print("Draw!")
         return result
