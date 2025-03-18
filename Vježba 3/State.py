@@ -4,14 +4,15 @@ class State:
     def __init__(self):
         self.string="VOKB || ----"
         self.in_boat=""
+        self.history = []
     
     def __str__(self):
-        return self.string
+        return self.string + " In Boat: " + self.in_boat
     
     def all_actions(self):
         actions=[]
         left,right=self.string.split(" || ")
-        print("STANJE: ", left,right)
+        #print("STANJE: ", left,right)
         if "B" in left:
             actions.append("SAIL")
             if self.in_boat=="":
@@ -31,21 +32,20 @@ class State:
                 actions.append("DISEMBARK "+self.in_boat)
                 
         return actions
-        
+
     def next_states(self):
-        next_states_list=[]
+        states = []
         actions=self.all_actions()
         for action in actions:
-            state=self.copy()
+            state = self.copy()
             state.action(action)
-            next_states_list.append(state)
-        for state_for in next_states_list:
-            print("stanje: ",state_for.__str__())
-        return next_states_list
+            states.append(state)
+        return states
 
     def action(self, act):
+        self.history.append((self.string, self.in_boat))
         left, right = self.string.split(" || ")
-        print("ACT in action: ",act)
+        #print("ACT in action: ",act)
         parts = act.split(" ")
         if len(parts) == 2:
             act, letter = parts
@@ -75,46 +75,31 @@ class State:
                 self.in_boat = ""
 
         self.string= left + " || " + right
-        print("posli action: ",self.__str__())
                 
     def undo_action(self):
-        pass
+        if self.history:
+            self.string, self.in_boat = self.history.pop()
 
     def copy(self):
         return deepcopy(self)
 
     def is_solved(self):
-        return self.string[:4]=="----"
+        right_side = self.string.split(" || ")[1]
+        return self.string[:4] == "----" and "B" in right_side and "K" in right_side and "O" in right_side and "V" in right_side
     
     def is_terminal(self):
-        left,right=self.string.split(" || ")
-        sorted(left)
-        sorted(right)
-
-        if(right=="BKOV"):
+        left, right = self.string.split(" || ")
+        
+        if "O" in left and "V" in left and "B" not in left:
+            return True
+        if "O" in right and "V" in right and "B" not in right:
             return True
         
-        terminal_states=["OV","KO"]
+        if "O" in left and "K" in left and "B" not in left:
+            return True
+        if "O" in right and "K" in right and "B" not in right:
+            return True
 
-        for t_state in terminal_states:
-            if t_state in left and "B" not in left:
-                return True
-            if t_state in right and "B" not in right:
-                return True
-        
         return False
 
 
-game=State()
-print("POCETNO ",game.__str__())
-i=0
-while True:
-    print("i ",i)
-    nxt_st=game.next_states()
-    for nxt_s in nxt_st:
-        print("nxt st ",nxt_s.__str__())
-    i+=1
-    print("i ",i)
-    if i>3:
-        break
-        
