@@ -61,9 +61,12 @@ class Game:
         
         result = self.result()
         if result == 1:
-            print("Player One won!")
+            pass
+            #print("Player One won!")
         elif result == -1:
-            print("Player Two won!")
+            pass
+            #print("Player Two won!")
         else:
-            print("Draw")
+            #print("Draw")
+            pass
         return result

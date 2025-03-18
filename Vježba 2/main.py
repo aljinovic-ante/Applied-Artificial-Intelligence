@@ -3,7 +3,7 @@ from bot import Bot
 from human import Human
 
 
-human=Bot("Ante")
+human=Human("Ante")
 bot=Bot("Bot")
 n=0
 human_cnt=0
