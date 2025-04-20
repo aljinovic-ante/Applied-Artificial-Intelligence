@@ -88,10 +88,42 @@ class State:
         return boxes
 
     def action(self, act):
-        return
-    
+        xf, yf = act[0]
+        xt, yt = act[1]
+
+        line = ((xf, yf), (xt, yt))
+        reverse_line = ((xt, yt), (xf, yf))
+        self.lines.add(line)
+        self.lines.add(reverse_line)
+        
+        self.stack.append(self.turn)
+        
+        closed = self.closed_boxes(xf, yf, xt, yt)
+        self.boxes[self.turn].update(closed)
+        
+        if not closed:
+            self.turn = 1 - self.turn
+        
+        self.step += 1
+
     def undo(self, act):
-        return
+        xf, yf = act[0]
+        xt, yt = act[1]
+        
+        line = ((xf, yf), (xt, yt))
+        reverse_line = ((xt, yt), (xf, yf))
+        self.lines.remove(line)
+        self.lines.remove(reverse_line)
+
+        self.step -= 1
+        
+        prev_turn = self.stack.pop()
+        self.turn = prev_turn
+
+        closed = self.closed_boxes(xf, yf, xt, yt)
+        for box in closed:
+            if box in self.boxes[prev_turn]:
+                self.boxes[prev_turn].remove(box)
         
     def terminal(self):
         if self.step == self.size * (self.size-1) * 2:

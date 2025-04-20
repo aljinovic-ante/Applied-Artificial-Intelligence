@@ -9,32 +9,46 @@ class Node:
         self.state = state
         self.n = 0
         self.tot_reward = 0
+        self.children = None
         if not self.is_terminal():
             self.children = { a: None for a in state.all_actions() }
-    
+
     def __repr__(self):
         s = f"qtot={self.tot_reward} n={self.n} q={self.qvalue():.3f}\n"
-        s += "|".join(f"{a} {self.children[a].qvalue()}" if self.children[a] is not None else f"{a} None" for a in self.children)
+        if self.children:
+            s += "|".join(
+                f"{a} {self.children[a].qvalue()}" if self.children[a] else f"{a} None"
+                for a in self.children
+            )
         return s + "\n"
-    
+
     def is_terminal(self):
         return self.state.terminal() != State.ONGOING
-    
+
     def qvalue(self):
-        return self.tot_reward / self.n
-    
+        if self.n > 0:
+            return self.tot_reward / self.n
+        else:
+            return 0.5
+
     def update(self, reward):
         self.tot_reward += reward
         self.n += 1
-        
-    def expand(self, action):
+
+    def expand(self, action, shared_memory):
         cstate = self.state.copy()
         cstate.action(action)
-        self.children[action] = Node(cstate)
+        key = str(cstate)
+        if key in shared_memory:
+            self.children[action] = shared_memory[key]
+        else:
+            new_node = Node(cstate)
+            shared_memory[key] = new_node
+            self.children[action] = new_node
         return self.children[action]
-    
+
     def uct_value(self, action, uct_c):
-        if self.children[action] is None:
+        if self.children[action] is None or self.children[action].n == 0:
             return 0.5 # assume draw
         return self.children[action].qvalue() + uct_c * sqrt(log(self.n) / self.children[action].n)
     
@@ -52,6 +66,7 @@ class MCTSAgent:
     def __init__(self, nrolls=100, uct_c=0.5):
         self.uct_c = uct_c
         self.nrolls = nrolls
+        self.shared_memory = {}
 
     def mcts(self):
         path = []
@@ -62,7 +77,7 @@ class MCTSAgent:
             node, action = node.select(self.uct_c)
         # expand leaf
         if node is None:
-            node = path[-1].expand(action)
+            node = path[-1].expand(action, self.shared_memory)
             path.append(node)
         # random rollout to the end
         cstate = node.state.copy()
@@ -82,8 +97,13 @@ class MCTSAgent:
         return action, (self.root.children[action].qvalue() if self.root.children[action] else 0.5)
     
     def action(self, state: State):
-        self.root = Node(state)
-        for i in range(self.nrolls):
+        key = str(state)
+        if key in self.shared_memory:
+            self.root = self.shared_memory[key]
+        else:
+            self.root = Node(state)
+            self.shared_memory[key] = self.root
+        for _ in range(self.nrolls):
             self.mcts()
         return self.best()
 
